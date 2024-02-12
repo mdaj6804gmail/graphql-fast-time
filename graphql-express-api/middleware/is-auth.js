@@ -1,36 +1,41 @@
-const { verify, decode } = require("jsonwebtoken");
+const { verify } = require("jsonwebtoken");
 const CastomError = require("../utils/error");
 const User = require("../models/user");
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const authHeader = req.get("Authorization");
-  if (
-    authHeader === "null" ||
-    authHeader === undefined ||
-    authHeader === null
-  ) {
-    // console.log(authHeader === undefined);
-    CastomError("User Not Authenticated", 401);
+  // console.log(authHeader);
+  if (!authHeader) {
+    req.isUser = false;
+    return next();
   }
-  const token = authHeader.split(" ")[1];
-
-  if (token === undefined || token === null) {
-    CastomError("User Not Authenticated", 401);
+  let token = "";
+  if (authHeader) {
+    token = authHeader.split(" ")[1];
   }
 
-  return verify(token, "mynameisAllMubinRafi360", (err, decode) => {
-    if (err) {
-      // console.log(err, decode);
-      CastomError(err.message, 401);
+  if (!token) {
+    req.isUser = false;
+    next();
+  }
+  try {
+    const decode = verify(token, "allmubin5refdvdv32vd53dvfded");
+    // console.log(decode);
+    const user = await User.findById(decode.id);
+    if (!user) {
+      req.isUser = false;
+      res.statusCode = 422;
+      next();
     }
-
-    User.findById(decode.userId)
-      .then((user) => {
-        req.user = user;
-        next();
-      })
-      .catch((err) => {
-        CastomError(err.message, 500);
-      });
-  });
+    // console.log(user);
+    req.userId = user.id.toString();
+    res.statusCode = 200;
+    req.isUser = true;
+    next();
+  } catch (e) {
+    console.log(e.message);
+    req.isUser = false;
+    res.statusCode = 422;
+    next();
+  }
 };

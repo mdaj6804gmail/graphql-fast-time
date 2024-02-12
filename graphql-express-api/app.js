@@ -7,6 +7,7 @@ const path = require("path");
 const { graphqlHTTP } = require("express-graphql");
 const schema = require("./graphql/schema");
 const rootValue = require("./graphql/resolvers");
+const auth = require("./middleware/is-auth");
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(express.static(path.join(__dirname, "/public/image")));
 app.use(loger("dev"));
 app.use(cors());
 
+app.use(auth);
+
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -23,11 +26,11 @@ app.use(
     rootValue: rootValue,
     graphiql: true,
     customFormatErrorFn(err) {
-      // console.log(err.originalError);
+      console.log("err.originalError :", err.message);
       const error = {
-        message: err.originalError.message || undefined,
-        code: err.originalError.code || 401,
-        ...err.originalError.data,
+        message: err.originalError?.message || err.message || undefined,
+        status: err.originalError?.status || 401,
+        ...(err.originalError?.data || undefined),
       };
 
       return error;

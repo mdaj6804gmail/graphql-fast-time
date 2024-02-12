@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import socketIo from "socket.io-client"
+// import socketIo from "socket.io-client"
 import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
 import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
@@ -38,72 +38,10 @@ class Feed extends Component {
 
         this.loadPosts();
 
-        const io = socketIo("http://localhost:8080/")
-        io.on("posts", data => {
-            if (data.action === "create") {
-                console.log(data)
-                this.addPost(data)
-            } else if (data.action === "update") {
-                console.log(data)
-                this.updatePost(data.post)
-            } else if (data.action === "delete") {
-                console.log(data)
-                this.loadPosts()
-            }
-        })
-
 
     }
 
-    addPost = post => {
-        this.setState(prevState => {
-            const updatedPost = [...prevState.posts]
-            if (prevState.postPage === 1) {
-                if (this.state.posts.length >= 2) {
-                    console.log("POP :")
-                    updatedPost.pop();
 
-                }
-                updatedPost.unshift(post.post)
-            }
-            // }  if (prevState.postPage === 1) {
-            //     updatedPost.pop()
-            //     updatedPost.unshift(post)
-            // }
-            console.log(updatedPost)
-            // return {
-            //     posts: updatedPost,
-            //     totalPosts: post.totalItems
-            // }
-            return {
-                posts: updatedPost,
-                isEditing: false,
-                editPost: null,
-                editLoading: false,
-                totalPosts: post.totalItems
-            };
-        })
-    }
-    updatePost = post => {
-        this.setState(prevState => {
-            let updatedPosts = [...prevState.posts];
-            if (prevState.editPost) {
-                const postIndex = prevState.posts.findIndex(
-                    p => p._id === prevState.editPost._id
-                );
-                updatedPosts[postIndex] = post;
-            }
-            // else if (prevState.posts.length < 2) {
-            //     updatedPosts = prevState.posts.concat(post);
-            // }
-            return {
-                posts: updatedPosts,
-                isEditing: false,
-                editPost: null,
-                editLoading: false
-            };
-        });
-    }
 
     loadPosts = direction => {
         if (direction) {
@@ -186,33 +124,48 @@ class Feed extends Component {
             editLoading: true
         });
         // Set up data (with image!)
-        let url = 'http://localhost:8080/feed/post';
-        let method = "POST"
-        if (this.state.editPost) {
-            url = "http://localhost:8080/feed/post/" + this.state.editPost._id;
-            method = "PUT"
-        }
-
-        const formdata = new FormData()
-
-        formdata.append("title", postData.title)
-        formdata.append("content", postData.content)
-        formdata.append("image", postData.image)
+        // let url = 'http://localhost:8080/feed/post';
+        // let method = "POST"
+        // if (this.state.editPost) {
+        //     url = "http://localhost:8080/feed/post/" + this.state.editPost._id;
+        //     method = "PUT"
+        // }
+        //
+        // const formdata = new FormData()
+        //
+        // formdata.append("title", postData.title)
+        // formdata.append("content", postData.content)
+        // formdata.append("image", postData.image)
         // console.log(postData)
-        fetch(url, {
-            method: method,
-            body: formdata,
+        const graphqlQuery = {
+            query:` mutation{
+            createPost(input:{
+            title:"${postData.title}",
+            content:"${postData.content}",
+            imageUrl:"hello_image553534.jpg"}){
+            id 
+            title
+            creator {
+                id
+                name
+        }}}`
+        }
+        fetch("http://localhost:8080/graphql", {
+            method: "POST",
+            body: JSON.stringify(graphqlQuery),
             headers: {
-                Authorization: `Bearer ${this.props.token}`
+                Authorization: `Bearer ${this.props.token}`,
+                "Content-Type": "application/json"
             }
         })
             .then(res => {
-                if (res.status !== 200 && res.status !== 201) {
-                    throw new Error('Creating or editing a post failed!');
-                }
+                // if (res.status !== 200 && res.status !== 201) {
+                //     throw new Error('Creating or editing a post failed!');
+                // }
                 return res.json();
             })
             .then(resData => {
+                console.log(resData)
                 // console.log(resData)
                 // const post = {
                 //     _id: resData._id,

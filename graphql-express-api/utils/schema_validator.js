@@ -11,15 +11,10 @@ exports.UserLoginValid = joi.object({
   password: joi.string().trim().min(4).required(),
 });
 
-const postSchema = joi.object({
+exports.validPost = joi.object({
   title: joi.string().min(3).trim().required(),
   imageUrl: joi.string().min(3).trim().required(),
   content: joi.string().min(3).trim().required(),
 });
-
-exports.validPost = (post) => {
-  const result = postSchema.validate(post);
-  return result;
-};
 
 exports.userSchema = UserValid;
