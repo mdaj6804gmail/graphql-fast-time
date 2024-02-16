@@ -17,4 +17,11 @@ exports.validPost = joi.object({
   content: joi.string().min(3).trim().required(),
 });
 
+exports.updateValdPost = joi.object({
+  id: joi.string().trim().id().required(),
+  title: joi.string().min(3).trim().required(),
+  imageUrl: joi.string().min(3).trim().required(),
+  content: joi.string().min(3).trim().required(),
+});
+
 exports.userSchema = UserValid;

@@ -3,12 +3,12 @@ import React from 'react';
 import './Paginator.css';
 
 const paginator = props => {
-    console.log(props)
+    // console.log(props)
   return  (
         <div className="paginator">
             {props.children}
             <div className="paginator__controls">
-                {props.currentPage > 1 &&props.lastPage>2&& (
+                {props.currentPage > 1 && (
                     <button className="paginator__control" onClick={props.onPrevious}>
                         Previous
                     </button>

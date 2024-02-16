@@ -7,6 +7,7 @@ module.exports = async (req, res, next) => {
   // console.log(authHeader);
   if (!authHeader) {
     req.isUser = false;
+    res.statusCode = 401;
     return next();
   }
   let token = "";
@@ -16,6 +17,7 @@ module.exports = async (req, res, next) => {
 
   if (!token) {
     req.isUser = false;
+    res.statusCode = 401;
     next();
   }
   try {
@@ -24,7 +26,7 @@ module.exports = async (req, res, next) => {
     const user = await User.findById(decode.id);
     if (!user) {
       req.isUser = false;
-      res.statusCode = 422;
+      res.statusCode = 401;
       next();
     }
     // console.log(user);
@@ -35,7 +37,7 @@ module.exports = async (req, res, next) => {
   } catch (e) {
     console.log(e.message);
     req.isUser = false;
-    res.statusCode = 422;
+    res.statusCode = 401;
     next();
   }
 };
